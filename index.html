@@ -65,9 +65,9 @@
                     <p id="week-range-label" class="text-xs text-slate-500 mt-0.5"></p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button id="prev-week" class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium hover:bg-slate-100 transition">이전 주</button>
-                    <button id="today-week" class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium hover:bg-slate-100 transition">이번 주</button>
-                    <button id="next-week" class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium hover:bg-slate-100 transition">다음 주</button>
+                    <button id="prev-week" type="button" class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium hover:bg-slate-100 transition">이전 주</button>
+                    <button id="today-week" type="button" class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium hover:bg-slate-100 transition">이번 주</button>
+                    <button id="next-week" type="button" class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium hover:bg-slate-100 transition">다음 주</button>
                 </div>
             </div>
 
@@ -135,7 +135,7 @@
     <!-- JavaScript 로직 -->
     <script>
         // ==========================================
-        // Supabase 설정 (여기에 키를 입력하세요)
+        // Supabase 설정 (본인의 URL과 ANON KEY를 입력하세요)
         // ==========================================
         const SUPABASE_URL = 'https://ihjegjduwwrkrlhitpej.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_05hcHXLpke3ini5tjxiLVg_UmT0XidN';
@@ -164,11 +164,9 @@
 
         // 초기화 실행
         window.addEventListener('DOMContentLoaded', () => {
-            // 오늘 날짜 기본 입력
             const todayStr = formatDate(new Date());
             document.getElementById('reservation-date').value = todayStr;
             
-            // 반납 예정일 기본값 (일주일 뒤)
             const nextWeek = new Date();
             nextWeek.setDate(nextWeek.getDate() + 7);
             document.getElementById('due-date').value = formatDate(nextWeek);
@@ -179,7 +177,6 @@
             // 이벤트 리스너 연결
             document.getElementById('reservation-form').addEventListener('submit', handleReservationSubmit);
             document.getElementById('search-input').addEventListener('input', renderReservationList);
-            document.getElementById('room-select').addEventListener('change', checkAndAutoFillDueDate);
             document.getElementById('schedule-room-select').addEventListener('change', renderWeeklySchedule);
 
             // 주간 이동 버튼
@@ -202,10 +199,9 @@
             updateWeekRangeLabel();
         });
 
-        // 주간 범위 라벨 업데이트
         function updateWeekRangeLabel() {
             const sunday = new Date(currentMonday);
-            sunday.setDate(sunday.getDate() + 4); // 금요일 기준 또는 주말 포함 표시
+            sunday.setDate(sunday.getDate() + 4);
             document.getElementById('week-range-label').textContent = 
                 `${formatDate(currentMonday)} ~ ${formatDate(sunday)}`;
         }
@@ -256,11 +252,6 @@
             renderWeeklySchedule();
         }
 
-        // 도서 선택 시 반납일 자동 계산 유도 등 편의 기능
-        function checkAndAutoFillDueDate() {
-            // 필요시 추가 편의 기능 구현 가능
-        }
-
         // 3. 예약 등록 처리 (오류 코드 23505 처리 포함)
         async function handleReservationSubmit(e) {
             e.preventDefault();
@@ -275,7 +266,6 @@
                 .insert([{ room_id, reservation_date, due_date, purpose }]);
 
             if (error) {
-                // 요구사항: 저장 오류 코드가 23505이면 "이미 예약된 도서입니다" 알림 후 시간표 새로고침
                 if (error.code === '23505') {
                     alert('이미 예약된 도서입니다.');
                 } else {
@@ -287,7 +277,6 @@
 
             alert('성공적으로 예약되었습니다!');
             document.getElementById('reservation-form').reset();
-            // 기본 날짜 재세팅
             document.getElementById('reservation-date').value = formatDate(new Date());
             fetchReservations();
         }
@@ -335,7 +324,7 @@
                     <td class="p-3 text-slate-600">${item.due_date}</td>
                     <td class="p-3 text-slate-600">${item.purpose || '-'}</td>
                     <td class="p-3 text-center">
-                        <button onclick="cancelReservation(${item.id})" class="bg-rose-50 hover:bg-rose-100 text-rose-600 font-medium px-3 py-1 rounded text-xs transition">
+                        <button type="button" onclick="cancelReservation(${item.id})" class="bg-rose-50 hover:bg-rose-100 text-rose-600 font-medium px-3 py-1 rounded text-xs transition">
                             취소
                         </button>
                     </td>
@@ -361,7 +350,6 @@
                 targetDate.setDate(currentMonday.getDate() + i);
                 const dateStr = formatDate(targetDate);
 
-                // 해당 도서 및 해당 날짜에 맞는 예약 찾기
                 const matched = reservationsData.find(item => 
                     String(item.room_id) === String(selectedRoomId) && item.reservation_date === dateStr
                 );
@@ -378,7 +366,7 @@
                                         <span class="text-xs text-slate-600">반납예정: ${matched.due_date}</span>
                                         ${matched.purpose ? `<p class="text-xs text-slate-500 mt-0.5">메모: ${matched.purpose}</p>` : ''}
                                     </div>
-                                    <button onclick="cancelReservation(${matched.id})" class="text-rose-500 hover:text-rose-700 text-xs font-medium px-2 py-1 bg-white border border-rose-200 rounded shadow-sm">취소</button>
+                                    <button type="button" onclick="cancelReservation(${matched.id})" class="text-rose-500 hover:text-rose-700 text-xs font-medium px-2 py-1 bg-white border border-rose-200 rounded shadow-sm">취소</button>
                                 </div>
                             ` : `<span class="text-slate-400 text-xs">대여 가능</span>`}
                         </td>
