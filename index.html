@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>우리반 미니도서관 도서 대여/예약 시스템</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS v2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- 상단 헤더 -->
+    <header class="bg-indigo-600 text-white shadow-md py-4 px-6 mb-6">
+        <div class="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+            <h1 class="text-2xl font-bold flex items-center gap-2">
+                📚 우리반 미니도서관 대여 시스템
+            </h1>
+            <span class="text-indigo-200 text-sm">초등학교 교실 독서 지도 도우미</span>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 w-full flex-grow pb-12 space-y-8">
+
+        <!-- 1. 예약/대여 등록 섹션 -->
+        <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <h2 class="text-lg font-semibold text-indigo-700 mb-4 flex items-center gap-2">
+                ✨ 도서 대여 예약하기
+            </h2>
+            <form id="reservation-form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-500 mb-1">도서 선택</label>
+                    <select id="room-select" required class="w-full border border-slate-200 rounded-lg p-2.5 text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <option value="">도서를 선택하세요</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-500 mb-1">대여 날짜</label>
+                    <input type="date" id="reservation-date" required class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-500 mb-1">반납 예정일</label>
+                    <input type="date" id="due-date" required class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-500 mb-1">목적 또는 메모 (선택)</label>
+                    <input type="text" id="purpose" placeholder="예: 독후감 숙제용" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div class="sm:col-span-2 lg:col-span-4 flex justify-end">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2.5 rounded-lg text-sm transition shadow-sm w-full sm:w-auto">
+                        예약 등록하기
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- 2. 주간 시간표(현황) 섹션 -->
+        <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                <div>
+                    <h2 class="text-lg font-semibold text-indigo-700 flex items-center gap-2">
+                        📅 주간 도서 대여 현황
+                    </h2>
+                    <p id="week-range-label" class="text-xs text-slate-500 mt-0.5"></p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="prev-week" class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium hover:bg-slate-100 transition">이전 주</button>
+                    <button id="today-week" class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium hover:bg-slate-100 transition">이번 주</button>
+                    <button id="next-week" class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium hover:bg-slate-100 transition">다음 주</button>
+                </div>
+            </div>
+
+            <!-- 도서 선택 필터 -->
+            <div class="mb-4">
+                <label class="block text-xs font-medium text-slate-500 mb-1">시간표로 조회할 도서</label>
+                <select id="schedule-room-select" class="w-full sm:w-72 border border-slate-200 rounded-lg p-2 text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <option value="">-- 도서를 선택하세요 --</option>
+                </select>
+            </div>
+
+            <!-- 주간 표 -->
+            <div class="overflow-x-auto border border-slate-100 rounded-xl">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead class="bg-slate-100 text-slate-600 text-xs uppercase">
+                        <tr>
+                            <th class="p-3 border-b text-center w-24">요일</th>
+                            <th class="p-3 border-b text-center w-28">날짜</th>
+                            <th class="p-3 border-b">대여 상태 / 메모</th>
+                        </tr>
+                    </thead>
+                    <tbody id="weekly-table-body" class="divide-y divide-slate-100">
+                        <tr>
+                            <td colspan="3" class="p-6 text-center text-slate-400">도서를 선택하면 해당 주간 대여 현황이 표시됩니다.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 3. 검색 및 예약 목록 / 취소 섹션 -->
+        <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
+                <h2 class="text-lg font-semibold text-indigo-700 flex items-center gap-2">
+                    🔍 예약 내역 검색 및 관리
+                </h2>
+                <div class="w
